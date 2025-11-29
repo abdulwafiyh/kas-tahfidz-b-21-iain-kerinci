@@ -126,8 +126,14 @@
         /* MODAL */
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
         .modal-content { max-width: 90%; max-height: 80%; border-radius: 8px; animation: zoom 0.3s; }
-        .rules-modal { background: var(--bg-card); padding: 25px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; color: var(--text-main); border-radius: 12px; }
-        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; }
+        .rules-modal { background: var(--bg-card); padding: 25px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; color: var(--text-main); border-radius: 12px; }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; z-index: 10; }
+        
+        /* Typography for Rules */
+        .rules-content h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-top: 15px; font-size: 14px; color: var(--primary-color); }
+        .rules-content h4 { margin-top: 10px; margin-bottom: 5px; font-size: 12px; }
+        .rules-content ul { padding-left: 20px; margin: 5px 0; }
+        .rules-content li { margin-bottom: 4px; line-height: 1.5; }
         
         /* --- MOBILE RESPONSIVE TWEAKS --- */
         @media (max-width: 600px) {
@@ -247,13 +253,91 @@
 
 <div id="rulesModal" class="modal">
     <div class="rules-modal">
-        <span class="close-modal" style="color:var(--text-main); top:15px; right:15px; font-size:24px;" onclick="closeModal('rulesModal')">&times;</span>
-        <h2 style="margin-bottom:20px;">📜 Aturan Kas</h2>
-        <p><strong>1. Iuran:</strong> Awal Rp5.000, Mingguan Rp2.000.</p>
-        <p><strong>2. Penggunaan:</strong> Sosial (40%), Operasional (30%), Kegiatan (20%), Darurat (10%).</p>
-        <p><strong>3. Sanksi:</strong> Menunggak >4 minggu akan ditandai.</p>
-        <br>
-        <div style="text-align:center; font-size:11px; color:grey;">Disepakati 17 Nov 2025</div>
+        <span class="close-modal" style="color:var(--text-main); top:15px; right:15px;" onclick="closeModal('rulesModal')">&times;</span>
+        
+        <div style="text-align:center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+            <h2 style="margin:0; font-size:16px;">📜 TATA TERTIB & ATURAN KAS</h2>
+            <p style="margin:5px 0 0 0; font-size:10px; opacity:0.7;">ASRAMA B TAHFIDZ ANGKATAN KE-21</p>
+        </div>
+
+        <div class="rules-content" style="font-size: 11px; text-align: justify; line-height: 1.6;">
+            <h3>BAB I: KETENTUAN UMUM</h3>
+            <p><strong>Pasal 1:</strong> Uang Kas Asrama B Tahfidz Angkatan ke-21 adalah dana kebersamaan yang dikumpulkan dari, oleh, dan untuk kepentingan seluruh anggota angkatan ke-21 demi menunjang kegiatan sosial, kebersihan, dan kebutuhan operasional asrama.</p>
+
+            <h3>BAB II: SUMBER DANA</h3>
+            <p><strong>Pasal 2:</strong> Sumber dana kas berasal dari:</p>
+            <ul>
+                <li><strong>Iuran Pokok Awal:</strong> Rp5.000 pada minggu pertama (17 Nov 2025).</li>
+                <li><strong>Iuran Wajib Mingguan:</strong> Rp2.000 per minggu (Jumat/Ahad).</li>
+                <li><strong>Donasi Sukarela:</strong> Sumbangan tidak mengikat.</li>
+                <li><strong>Denda:</strong> Sanksi keterlambatan (jika disepakati).</li>
+            </ul>
+
+            <h3>BAB III: PENGGUNAAN DANA</h3>
+            <p><strong>Pasal 3:</strong> Pos pengeluaran:</p>
+            
+            <h4>1. Dana Sosial & Ukhuwah (40%)</h4>
+            <ul>
+                <li><strong>Menjenguk Sakit:</strong> Rawat inap/sakit berat >3 hari (Max: Rp[...]).</li>
+                <li><strong>Berita Duka:</strong> Keluarga inti (Ayah/Ibu) meninggal.</li>
+                <li><strong>Prestasi:</strong> Apresiasi Khataman 30 Juz.</li>
+            </ul>
+
+            <h4>2. Operasional & Kebersihan (30%)</h4>
+            <ul>
+                <li>Alat kebersihan (Sapu, Pel) saat habis/rusak.</li>
+                <li>Inventaris (Galon, Karpet, dll).</li>
+                <li>Fotokopi/cetak materi kolektif.</li>
+            </ul>
+
+            <h4>3. Kegiatan Angkatan (20%)</h4>
+            <ul>
+                <li>Subsidi makan bersama (Liwetan).</li>
+                <li>Biaya tak terduga acara angkatan (Rihlah).</li>
+            </ul>
+
+            <h4>4. Dana Darurat / Saving (10%)</h4>
+            <ul>
+                <li>Dana cadangan mendesak masa depan.</li>
+            </ul>
+
+            <h3>BAB IV: MEKANISME PENGELOLAAN</h3>
+            <p><strong>Pasal 4:</strong></p>
+            <ul>
+                <li><strong>Penarikan:</strong> Bendahara menagih setiap minggu.</li>
+                <li><strong>Penyimpanan:</strong> Tunai/Bank & dicatat di Web/Spreadsheet.</li>
+                <li><strong>Pengeluaran:</strong> Wajib persetujuan Ketua & ada Nota (kecuali pasar).</li>
+            </ul>
+
+            <h3>BAB V: PELAPORAN</h3>
+            <p><strong>Pasal 5:</strong></p>
+            <ul>
+                <li>Update data setiap ada transaksi.</li>
+                <li>Laporan rekapitulasi dibagikan setiap akhir bulan.</li>
+                <li>Akses transparansi terbuka (Web ini).</li>
+            </ul>
+
+            <h3>BAB VI: SANKSI DAN DENDA</h3>
+            <p><strong>Pasal 6:</strong></p>
+            <ul>
+                <li>Menunggak >2 minggu: Teguran lisan.</li>
+                <li>Menunggak >1 bulan (4 minggu): <span style="color:red; font-weight:bold;">Ditandai Merah</span> di laporan.</li>
+                <li>(Opsional) Infaq seikhlasnya jika telat tanpa uzur.</li>
+            </ul>
+
+            <h3>BAB VII: PENUTUP</h3>
+            <p>Hal yang belum diatur diputuskan lewat musyawarah.</p>
+
+            <br>
+            <div style="text-align:center; font-style:italic; opacity:0.8;">
+                <div>Ditetapkan: 17 November 2025</div>
+                <br>
+                <div style="display:flex; justify-content:space-around;">
+                    <div>Mengetahui,<br><br>( Ketua Angkatan )</div>
+                    <div>Mengetahui,<br><br>( Bendahara )</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -419,22 +503,9 @@
     }
 
     function updateFooter() {
-        // Hitung Target Berdasarkan Minggu Berjalan
-        const now = new Date(); now.setHours(0,0,0,0);
-        const start = new Date(START_DATE); start.setHours(0,0,0,0);
-        const diffDays = Math.ceil((now - start) / (1000 * 60 * 60 * 24)); 
-        let currentWeek = Math.floor(diffDays / 7) + 1;
-        if (currentWeek < 1) currentWeek = 1;
-        if (currentWeek > TOTAL_WEEKS) currentWeek = TOTAL_WEEKS;
-
-        const totalStudents = STUDENTS.length; // 10 orang
+        // --- LOGIKA TARGET TETAP (TOTAL PERIODE) ---
+        const targetAmount = 770000; // Total dari 37 Minggu untuk 10 Orang
         
-        // Rumus: (Minggu 1 x 5000 x 10) + ((Minggu Ini - 1) x 2000 x 10)
-        let targetAmount = totalStudents * 5000; // Base minggu 1
-        if (currentWeek > 1) {
-            targetAmount += (totalStudents * 2000 * (currentWeek - 1));
-        }
-
         let deficit = targetAmount - totalStudentIncome;
         if (deficit < 0) deficit = 0;
 
