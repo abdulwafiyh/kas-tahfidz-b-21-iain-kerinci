@@ -44,7 +44,7 @@
         .header-controls { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
         
         /* TABLE STYLES */
-        .table-wrapper { overflow-x: auto; max-height: 65vh; position: relative; scrollbar-width: thin; -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */ }
+        .table-wrapper { overflow-x: auto; max-height: 65vh; position: relative; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
         table { border-collapse: separate; border-spacing: 0; width: max-content; }
         th, td { padding: 8px 4px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); text-align: center; vertical-align: middle; }
         
@@ -70,12 +70,36 @@
         body.is-admin input[type="number"]:not(.is-paid):not(.is-partial) { border-bottom: 1px dashed var(--border-color); }
         body.is-admin input[type="number"]:focus { background-color: var(--input-focus) !important; outline: none; border: 1px solid var(--primary-color); }
 
-        /* FOOTER */
-        .floating-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); padding: 12px 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: center; z-index: 100; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 5px; }
-        .stat-item { display: flex; flex-direction: column; min-width: 80px; }
-        .stat-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
-        .stat-val { font-size: 14px; font-weight: 700; color: var(--text-main); }
-        .text-green { color: var(--pos-text); } .text-red { color: var(--neg-text); }
+        /* FOOTER (UPDATED - RAPAT) */
+        .floating-footer { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: var(--bg-card); 
+            padding: 10px 5px; 
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15); 
+            display: flex; 
+            justify-content: center; /* Rapat Tengah */
+            gap: 12px; 
+            align-items: center; 
+            z-index: 100; 
+            border-top: 1px solid var(--border-color); 
+            flex-wrap: wrap; 
+        }
+        
+        .stat-item { 
+            display: flex; flex-direction: column; 
+            align-items: center; 
+            padding: 0 5px;
+        }
+        /* Garis Pemisah */
+        .stat-item:not(:last-child) { border-right: 1px solid var(--border-color); padding-right: 12px; }
+
+        .stat-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+        .stat-val { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        
+        .text-green { color: var(--pos-text); } 
+        .text-red { color: var(--neg-text); }
+        .text-blue { color: #2196f3; }
+        .text-orange { color: #ff9800; }
 
         /* BUTTONS */
         .btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 6px; cursor: pointer; font-size: 11px; }
@@ -109,12 +133,17 @@
         @media (max-width: 600px) {
             .header-titles h1 { font-size: 16px; }
             .header-controls { width: 100%; justify-content: space-between; margin-top: 10px; }
-            .shortcuts-info { display: none; } /* Hide shortcut info on mobile to save space */
-            .floating-footer { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
-            .floating-footer .stat-item { flex: 1; text-align: center; margin-bottom: 5px; }
-            .floating-footer .stat-item:last-child { flex: 100%; border-top: 1px solid var(--border-color); padding-top: 5px; margin-top: 5px; }
-            .stat-val { font-size: 13px; }
-            #real-balance { font-size: 18px; }
+            .shortcuts-info { display: none; }
+            
+            /* Footer Mobile */
+            .floating-footer { gap: 8px; justify-content: space-evenly; }
+            .stat-item:not(:last-child) { border: none; padding-right: 0; }
+            .stat-val { font-size: 12px; }
+            .stat-label { font-size: 8px; }
+            /* Saldo di baris baru jika sempit */
+            .saldo-container { flex-basis: 100%; text-align: center; margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--border-color); }
+            #real-balance { font-size: 16px; }
+            
             .user-name { max-width: 70px; font-size: 11px; }
             th:nth-child(2), td:nth-child(2) { width: 110px; min-width: 110px; left: 30px; }
         }
@@ -186,16 +215,24 @@
 
 <div class="floating-footer">
     <div class="stat-item">
+        <span class="stat-label">Target</span>
+        <span class="stat-val text-blue" id="target-fees">Rp 0</span>
+    </div>
+    <div class="stat-item">
         <span class="stat-label">Masuk</span>
         <span class="stat-val text-green" id="total-student-fees">Rp 0</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-label">Kurang</span>
+        <span class="stat-val text-orange" id="defisit-fees">Rp 0</span>
     </div>
     <div class="stat-item">
         <span class="stat-label">Keluar</span>
         <span class="stat-val text-red" id="total-expenses">Rp 0</span>
     </div>
-    <div class="stat-item">
-        <span class="stat-label" style="color:var(--primary-color)">SISA SALDO REAL</span>
-        <span class="stat-val" id="real-balance" style="font-size: 18px; color: var(--primary-color);">Rp 0</span>
+    <div class="stat-item saldo-container">
+        <span class="stat-label" style="color:var(--primary-color)">SISA SALDO</span>
+        <span class="stat-val" id="real-balance" style="font-size: 15px; color: var(--primary-color);">Rp 0</span>
     </div>
 </div>
 
@@ -350,9 +387,32 @@
         if (confirm("Hapus?")) db.ref('transactions').child(key).remove();
     }
 
+    // --- FUNGSI UPDATE FOOTER BARU ---
     function updateFooter() {
+        // Hitung Target Berdasarkan Minggu Berjalan
+        const now = new Date(); now.setHours(0,0,0,0);
+        const start = new Date(START_DATE); start.setHours(0,0,0,0);
+        const diffDays = Math.ceil((now - start) / (1000 * 60 * 60 * 24)); 
+        let currentWeek = Math.floor(diffDays / 7) + 1;
+        if (currentWeek < 1) currentWeek = 1;
+        if (currentWeek > TOTAL_WEEKS) currentWeek = TOTAL_WEEKS;
+
+        const totalStudents = STUDENTS.length; // 10 orang
+        
+        // Rumus: (Minggu 1 x 5000 x 10) + ((Minggu Ini - 1) x 2000 x 10)
+        let targetAmount = totalStudents * 5000; // Base minggu 1
+        if (currentWeek > 1) {
+            targetAmount += (totalStudents * 2000 * (currentWeek - 1));
+        }
+
+        let deficit = targetAmount - totalStudentIncome;
+        if (deficit < 0) deficit = 0;
+
         const real = (totalStudentIncome + totalOtherIncome) - totalExpenses;
+
+        document.getElementById('target-fees').textContent = formatRp(targetAmount);
         document.getElementById('total-student-fees').textContent = formatRp(totalStudentIncome);
+        document.getElementById('defisit-fees').textContent = formatRp(deficit);
         document.getElementById('total-expenses').textContent = formatRp(totalExpenses);
         document.getElementById('real-balance').textContent = formatRp(real);
     }
@@ -361,7 +421,6 @@
     function adminLogin() {
         const pass = prompt("Password Admin:");
         if (!pass) return;
-        // Password: 
         if (btoa(pass) === "YWRtaW5nYW50ZW5nMjE=") {
             document.body.classList.add("is-admin"); localStorage.setItem("isAdmin", "true");
             alert("Login Sukses!");
@@ -394,4 +453,3 @@
 </script>
 </body>
 </html>
-
