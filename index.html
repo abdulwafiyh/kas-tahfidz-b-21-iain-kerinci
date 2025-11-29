@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kas Asrama B Tahfidz - Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        /* --- CSS TEMA SAMA SEPERTI SEBELUMNYA --- */
+        :root {
+            --primary-color: #4361ee; --bg-body: #f2f4f8; --bg-card: #ffffff;
+            --bg-header: #f8f9fa; --border-color: #dee2e6; --text-main: #212529;
+            --text-muted: #6c757d; --input-hover: #f1f3f5; --input-focus: #e7f1ff;
+            --shadow: rgba(0,0,0,0.05); --lunas-bg: #e8f5e9; --lunas-text: #0f5132;
+            --lebih-bg: #fff8e1; --lebih-text: #664d03; --neg-bg: #ffebeb; --neg-text: #dc3545;
+            --pos-bg: #e0f2f1; --pos-text: #198754;
+            --cell-paid-bg: #c8e6c9; --cell-paid-text: #1b5e20;
+            --cell-partial-bg: #fff3cd; --cell-partial-text: #856404;
+        }
+        [data-theme="dark"] {
+            --primary-color: #5c7cfa; --bg-body: #121212; --bg-card: #1e1e1e;
+            --bg-header: #2d2d2d; --border-color: #333333; --text-main: #e0e0e0;
+            --text-muted: #a0a0a0; --input-hover: #2c2c2c; --input-focus: #1a2332;
+            --shadow: rgba(0,0,0,0.5); --lunas-bg: #0f3d20; --lunas-text: #81c784;
+            --lebih-bg: #423506; --lebih-text: #ffd54f; --neg-bg: #3e181b; --neg-text: #e57373;
+            --pos-bg: #113326; --pos-text: #80cbc4;
+            --cell-paid-bg: #1b4d3e; --cell-paid-text: #a5d6a7;
+            --cell-partial-bg: #4d3e1b; --cell-partial-text: #ffe082;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: var(--text-main); font-size: 13px; transition: 0.3s; padding-bottom: 100px; }
+        .container { max-width: 100%; background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 20px var(--shadow); overflow: hidden; margin-bottom: 30px; }
+        
+        .header-section { padding: 20px 25px; background: linear-gradient(135deg, #4361ee, #3f37c9); color: white; display: flex; justify-content: space-between; align-items: flex-start; }
+        .header-titles h1 { margin: 0; font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; line-height: 1.2; }
+        .header-titles h2 { margin: 0; font-size: 14px; font-weight: 500; opacity: 0.9; margin-top: 5px; }
+        .header-titles h3 { margin: 0; font-size: 12px; font-weight: 400; opacity: 0.7; }
+        .header-controls { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .shortcuts-info { font-size: 11px; color: rgba(255,255,255,0.8); text-align: right; margin-right: 10px; line-height: 1.4; }
+        .theme-toggle { background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; margin-left: 5px; transition: 0.2s; }
+
+        .table-wrapper { overflow-x: auto; max-height: 60vh; position: relative; scrollbar-width: thin; scrollbar-color: #888 var(--bg-body); }
+        table { border-collapse: separate; border-spacing: 0; width: max-content; }
+        th, td { padding: 8px 4px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); text-align: center; vertical-align: middle; }
+        thead th { background-color: var(--bg-header); color: var(--text-main); position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border-color); height: 50px; font-weight: 600; }
+        th:nth-child(1), td:nth-child(1) { position: sticky; left: 0; background-color: var(--bg-card); z-index: 20; width: 40px; border-right: 1px solid var(--border-color); }
+        th:nth-child(2), td:nth-child(2) { position: sticky; left: 40px; background-color: var(--bg-card); z-index: 20; text-align: left; padding-left: 15px; width: 220px; border-right: 2px solid var(--border-color); box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); }
+        thead th:nth-child(1), thead th:nth-child(2) { z-index: 30; background-color: var(--bg-header); }
+
+        .user-cell { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); cursor: pointer; transition: 0.2s; }
+        
+        input[type="number"] { width: 55px; padding: 6px 0; border: 1px solid transparent; background: transparent; text-align: center; color: var(--text-main); pointer-events: none; border-radius: 6px; font-weight: 500; font-size: 13px; }
+        input.is-paid { background-color: var(--cell-paid-bg) !important; color: var(--cell-paid-text) !important; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        input.is-partial { background-color: var(--cell-partial-bg) !important; color: var(--cell-partial-text) !important; }
+        
+        body.is-admin input[type="number"] { pointer-events: auto; }
+        body.is-admin input[type="number"]:not(.is-paid):not(.is-partial) { border-bottom: 1px dashed var(--border-color); }
+        body.is-admin input[type="number"]:focus { background-color: var(--input-focus) !important; outline: none; border: 1px solid var(--primary-color); }
+
+        .floating-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); padding: 15px 30px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); display: flex; justify-content: flex-start; align-items: center; gap: 40px; z-index: 100; border-top: 1px solid var(--border-color); }
+        .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: block; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .stat-val { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .text-green { color: var(--pos-text); } .text-red { color: var(--neg-text); }
+
+        .admin-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
+        .admin-btn:hover { background: rgba(255,255,255,0.3); }
+        .admin-badge { display: none; background: #00e676; color: #003300; padding: 3px 8px; border-radius: 4px; font-size: 10px; margin-left: 10px; font-weight: 800; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        body.is-admin .admin-badge { display: inline-block; }
+        body.is-admin .login-text { display: none; }
+        body.is-admin .logout-text { display: inline-block; }
+        .logout-text { display: none; background: rgba(220, 53, 69, 0.4); border-color: rgba(220, 53, 69, 0.6); }
+
+        .section-title { padding: 15px 25px; font-weight: 600; font-size: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-card); }
+        .trans-form { display: none; padding: 15px 25px; gap: 10px; background: var(--input-hover); border-bottom: 1px solid var(--border-color); flex-wrap: wrap; align-items: center; }
+        body.is-admin .trans-form { display: flex; }
+        .form-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); color: var(--text-main); font-size: 13px; outline: none; }
+        .btn-add { background: var(--primary-color); color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        
+        .btn-delete { background: rgba(220, 53, 69, 0.1); color: var(--neg-text); border: 1px solid var(--neg-text); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; display: none; transition: 0.2s; }
+        .btn-delete:hover { background: var(--neg-text); color: white; }
+        body.is-admin .btn-delete { display: inline-block; }
+
+        .trans-table { width: 100%; border-collapse: collapse; }
+        .trans-table th { text-align: left; padding: 12px 25px; background: var(--bg-header); font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        .trans-table td { padding: 12px 25px; border-bottom: 1px solid var(--border-color); font-size: 13px; text-align: left; }
+        .type-in { color: var(--pos-text); font-weight: 600; background: rgba(25, 135, 84, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .type-out { color: var(--neg-text); font-weight: 600; background: rgba(220, 53, 69, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .modal-content { max-width: 90%; max-height: 80%; border-radius: 8px; animation: zoom 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .rules-modal { background: var(--bg-card); padding: 40px; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; color: var(--text-main); position: relative; border-radius: 12px; }
+        
+        .rules-modal h2 { margin-top: 0; color: var(--primary-color); font-size: 20px; text-align: center; margin-bottom: 5px; font-weight: 700; }
+        .rules-modal h4 { font-size: 14px; text-align: center; margin-top: 0; margin-bottom: 30px; opacity: 0.7; font-weight: 500; }
+        .rules-modal h3 { font-size: 15px; margin-bottom: 12px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-top: 30px; color: var(--primary-color); font-weight: 600; }
+        .rules-modal p, .rules-modal li { font-size: 13px; line-height: 1.7; opacity: 0.9; margin-bottom: 10px; text-align: justify; }
+        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 28px; cursor: pointer; color: var(--text-muted); }
+        @keyframes zoom { from {transform:scale(0.9); opacity: 0;} to {transform:scale(1); opacity: 1;} }
+    </style>
+</head>
+<body>
+
+<div class="container" style="margin-bottom: 20px;">
+    <div class="header-section">
+        <div class="header-titles">
+            <h1>
+                Kas Asrama B Tahfidz Angkatan 21
+                <span class="admin-badge">ADMIN</span>
+            </h1>
+            <h3>Mahasantri Ma'had Al-Jamiah Institut Agama Islam Negeri (IAIN) Kerinci Tahun 2025/2026</h3>
+        </div>
+        
+        <div class="header-controls">
+            <div class="shortcuts-info">
+                Ketik <b>2</b>=2k, <b>5</b>=5k <br>
+                Minggu 1: 5k | Next: 2k
+            </div>
+            <button class="admin-btn" onclick="openRules()">📜 Lihat Pasal</button>
+            <button class="admin-btn login-text" onclick="adminLogin()">🔑 Login</button>
+            <button class="admin-btn logout-text" onclick="adminLogout()">🚪 Keluar</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="section-title">
+        <span>📋 Rekapitulasi Iuran Mingguan</span>
+        <span style="font-size: 11px; opacity: 0.7; background: var(--bg-body); padding: 4px 10px; border-radius: 20px;">M1: 5.000 | M2+: 2.000</span>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Santri</th>
+                    </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="container">
+    <div class="section-title">
+        <span>💰 Buku Kas Umum (Pengeluaran & Pemasukan Lain)</span>
+    </div>
+    
+    <div class="trans-form">
+        <input type="date" id="t-date" class="form-input">
+        <input type="text" id="t-desc" placeholder="Keterangan (misal: Beli Sapu)" class="form-input" style="flex: 2;">
+        <select id="t-type" class="form-input">
+            <option value="out">🔴 Pengeluaran</option>
+            <option value="in">🟢 Pemasukan Lain</option>
+        </select>
+        <input type="number" id="t-amount" placeholder="Nominal (Rp)" class="form-input">
+        <button onclick="addTransaction()" class="btn-add">Simpan Data</button>
+    </div>
+
+    <div style="max-height: 350px; overflow-y: auto;">
+        <table class="trans-table">
+            <thead>
+                <tr>
+                    <th width="15%">Tanggal</th>
+                    <th>Keterangan</th>
+                    <th width="15%">Jenis</th>
+                    <th width="20%">Nominal</th>
+                    <th width="5%">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="trans-body">
+                <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">Memuat data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="floating-footer">
+    <div>
+        <span class="stat-label">Total Iuran Santri</span>
+        <span class="stat-val text-green" id="total-student-fees">Rp 0</span>
+    </div>
+    <div>
+        <span class="stat-label">Total Pengeluaran</span>
+        <span class="stat-val text-red" id="total-expenses">Rp 0</span>
+    </div>
+    <div>
+        <span class="stat-label" style="color:var(--primary-color)">SISA SALDO KAS (REAL)</span>
+        <span class="stat-val" id="real-balance" style="font-size: 22px; color: var(--primary-color);">Rp 0</span>
+    </div>
+    <div id="status-indicator" style="font-size: 10px; color: grey; margin-left: auto;">Memuat...</div>
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal('imageModal')">
+    <span class="close-modal" style="color:white; top:20px; right:30px;" onclick="closeModal('imageModal')">&times;</span>
+    <img class="modal-content" id="img01">
+    <div id="caption" style="color:white; margin-top:10px; font-weight: 500;"></div>
+</div>
+
+<div id="rulesModal" class="modal">
+    <div class="rules-modal">
+        <span class="close-modal" onclick="closeModal('rulesModal')">&times;</span>
+        <h2>📜 TATA TERTIB DAN PENGGUNAAN UANG KAS</h2>
+        <h4>MAHASANTRI ASRAMA B TAHFIDZ ANGKATAN KE-21</h4>
+        
+        <h3>BAB I: KETENTUAN UMUM</h3>
+        <p><strong>Pasal 1</strong><br>
+        Uang Kas Asrama B Tahfidz Angkatan ke-21 adalah dana kebersamaan yang dikumpulkan dari, oleh, dan untuk kepentingan seluruh anggota angkatan ke-21 demi menunjang kegiatan sosial, kebersihan, dan kebutuhan operasional asrama.</p>
+
+        <h3>BAB II: SUMBER DANA</h3>
+        <p><strong>Pasal 2</strong><br>Sumber dana kas berasal dari:</p>
+        <ul>
+            <li><strong>Iuran Pokok Awal:</strong> Sebesar Rp5.000 (lima ribu rupiah) yang dibayarkan pada minggu pertama kepengurusan (17 November 2025).</li>
+            <li><strong>Iuran Wajib Mingguan:</strong> Sebesar Rp2.000 (dua ribu rupiah) per minggu yang wajib dibayarkan setiap hari [Jumat/Ahad].</li>
+            <li><strong>Donasi Sukarela:</strong> Sumbangan tidak mengikat dari anggota atau pihak lain.</li>
+            <li><strong>Denda:</strong> Hasil dari sanksi keterlambatan pembayaran (jika disepakati).</li>
+        </ul>
+
+        <h3>BAB III: PENGGUNAAN DANA</h3>
+        <p><strong>Pasal 3</strong><br>Dana kas digunakan untuk pos-pos pengeluaran sebagai berikut:</p>
+        <p><strong>1. Dana Sosial & Ukhuwah (40%)</strong></p>
+        <ul>
+            <li><strong>Menjenguk Sakit:</strong> Pembelian buah tangan untuk anggota yang sakit (Rawat Inap/Sakit berat di asrama lebih dari 3 hari). Nominal maksimal: Rp[...].</li>
+            <li><strong>Berita Duka:</strong> Sumbangan duka cita jika ada keluarga inti (Ayah/Ibu) anggota yang meninggal dunia.</li>
+            <li><strong>Prestasi:</strong> Apresiasi kecil untuk anggota yang menuntaskan setoran hafalan (Khataman 30 Juz).</li>
+        </ul>
+        <p><strong>2. Kebutuhan Operasional & Kebersihan (30%)</strong></p>
+        <ul>
+            <li>Pembelian alat kebersihan asrama (Sapu, Pel, Pembersih Lantai) jika stok habis/rusak.</li>
+            <li>Pembelian perlengkapan inventaris angkatan (misal: Galon air minum bersama, Karpet, dll).</li>
+            <li>Fotokopi atau cetak materi yang bersifat kolektif untuk kepentingan mengaji/kuliah.</li>
+        </ul>
+        <p><strong>3. Kegiatan Angkatan (20%)</strong></p>
+        <ul>
+            <li>Subsidi biaya makan bersama (Liwetan/Mayor) untuk mempererat solidaritas.</li>
+            <li>Biaya tak terduga saat pelaksanaan acara angkatan (Rihlah/Ziarah).</li>
+        </ul>
+        <p><strong>4. Dana Darurat / Saving (10%)</strong></p>
+        <ul>
+            <li>Disimpan sebagai dana cadangan untuk keperluan mendesak yang tidak terduga di masa depan.</li>
+        </ul>
+
+        <h3>BAB IV: MEKANISME PENGELOLAAN</h3>
+        <p><strong>Pasal 4</strong></p>
+        <ul>
+            <li><strong>Penarikan:</strong> Bendahara berhak menagih iuran wajib setiap minggunya.</li>
+            <li><strong>Penyimpanan:</strong> Dana disimpan oleh Bendahara secara tunai (cash) atau rekening bank yang ditunjuk, dan dicatat dalam pembukuan (Spreadsheet) yang transparan.</li>
+            <li><strong>Pengeluaran:</strong>
+                <ul>
+                    <li>Setiap pengeluaran harus sepengetahuan dan disetujui oleh Ketua Angkatan.</li>
+                    <li>Setiap pembelian barang wajib menyertakan Nota/Bukti Transaksi (kecuali kondisi mendesak/pasar tradisional).</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>BAB V: PELAPORAN</h3>
+        <p><strong>Pasal 5</strong></p>
+        <ul>
+            <li>Bendahara wajib memperbarui data kas di Spreadsheet/Web setiap kali ada transaksi masuk atau keluar.</li>
+            <li>Laporan rekapitulasi (Total Uang Masuk, Keluar, dan Saldo Akhir) akan dibagikan ke grup WhatsApp angkatan setiap akhir bulan.</li>
+            <li>Seluruh anggota berhak mengakses tautan transparansi kas kapan saja (Link Read-Only).</li>
+        </ul>
+
+        <h3>BAB VI: SANKSI DAN DENDA</h3>
+        <p><strong>Pasal 6</strong></p>
+        <ul>
+            <li>Anggota yang menunggak pembayaran kas lebih dari 2 minggu berturut-turut akan diberikan teguran lisan.</li>
+            <li>Anggota yang menunggak lebih dari 1 bulan (4 minggu) namanya akan ditandai khusus (warna Merah) dalam laporan bulanan.</li>
+            <li>(Opsional) Keterlambatan pembayaran tanpa alasan syar'i dikenakan infaq tambahan seikhlasnya.</li>
+        </ul>
+
+        <h3>BAB VII: PENUTUP</h3>
+        <p><strong>Pasal 7</strong><br>Hal-hal yang belum diatur dalam tata tertib ini akan diputuskan kemudian melalui musyawarah mufakat angkatan.</p>
+        
+        <br>
+        <p style="text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            Ditetapkan di: <strong>Asrama B Tahfidz</strong><br>
+            Tanggal: <strong>17 November 2025</strong>
+        </p>
+        <br>
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div>Mengetahui,<br><br><br>( ........................... )<br>Ketua Angkatan</div>
+            <div>Mengetahui,<br><br><br>( ........................... )<br>Bendahara</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. KONFIGURASI FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC1LLUqM7fpWBi64RYNikxv0myBCbeYVfA",
+        authDomain: "kas-tahfidz-b-21-iain-ke-a49e7.firebaseapp.com",
+        projectId: "kas-tahfidz-b-21-iain-ke-a49e7",
+        storageBucket: "kas-tahfidz-b-21-iain-ke-a49e7.firebasestorage.app",
+        messagingSenderId: "958192304792",
+        appId: "1:958192304792:web:70502398346daac16d86ed"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- 2. DATA UTAMA ---
+    const STUDENTS = ["Asyrafa", "Damar", "Fahri", "Fatur", "Geo", "Hengki", "Pujangga", "Rhafino", "Wafiy", "Zaki"];
+    const START_DATE = new Date("2025-11-17");
+    const TOTAL_WEEKS = 37;
+    const FEE_WEEK_1 = 5000;
+    const FEE_REGULAR = 2000;
+    const formatRp = (num) => "Rp " + num.toLocaleString('id-ID');
+
+    // --- 3. RENDER HEADER ---
+    const headerRow = document.querySelector('thead tr');
+    let currentDate = new Date(START_DATE);
+    headerRow.innerHTML = '<th>No</th><th>Nama Santri</th>'; 
+    for (let i = 1; i <= TOTAL_WEEKS; i++) {
+        const dateStr = currentDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit' });
+        const th = document.createElement('th');
+        th.style.minWidth = '70px';
+        th.innerHTML = `<div style="font-size:8px; opacity:0.7">MG ${i}</div><div style="font-size:10px">${dateStr}</div>`;
+        headerRow.appendChild(th);
+        currentDate.setDate(currentDate.getDate() + 7);
+    }
+
+    // --- 4. RENDER BODY ---
+    const tbody = document.getElementById('table-body');
+    STUDENTS.forEach((name, index) => {
+        const rowId = index + 1;
+        const tr = document.createElement('tr');
+        tr.id = `row-${index}`;
+        const avatarUrl = `foto/${name}.jpeg`; // Ganti .jpg jika perlu
+        const imgError = `this.onerror=null;this.src='https://ui-avatars.com/api/?name=${name}&background=random&color=fff&size=64';`;
+        
+        let html = `<td>${rowId}</td><td><div class="user-cell"><img src="${avatarUrl}" class="user-avatar" onerror="${imgError}" onclick="showImage(this.src, '${name}')"><span class="user-name">${name}</span></div></td>`;
+        for (let i = 1; i <= TOTAL_WEEKS; i++) {
+            html += `<td><input type="number" id="pay-${index}-${i}" placeholder="0" 
+                    onchange="savePayment(${index}, ${i}, this.value)" 
+                    oninput="checkColor(this, ${i})" onfocus="this.select()"></td>`;
+        }
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    });
+
+    // --- 5. LOGIKA TRANSAKSI ---
+    document.getElementById('t-date').valueAsDate = new Date();
+
+    function addTransaction() {
+        const date = document.getElementById('t-date').value;
+        const desc = document.getElementById('t-desc').value;
+        const type = document.getElementById('t-type').value;
+        const amount = parseInt(document.getElementById('t-amount').value);
+
+        if (!desc || !amount) { alert("Data tidak lengkap!"); return; }
+
+        db.ref('transactions').push({
+            date: date, desc: desc, type: type, amount: amount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        document.getElementById('t-desc').value = '';
+        document.getElementById('t-amount').value = '';
+    }
+
+    function deleteTransaction(key) {
+        if (confirm("Hapus transaksi ini?")) {
+            db.ref('transactions').child(key).remove();
+        }
+    }
+
+    // --- 6. SYNC FIREBASE ---
+    const statusInd = document.getElementById('status-indicator');
+    let totalStudentIncome = 0;
+    let totalOtherIncome = 0;
+    let totalExpenses = 0;
+
+    // Sync Payments
+    db.ref('payments').on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        totalStudentIncome = 0;
+
+        STUDENTS.forEach((_, sIndex) => {
+            for (let w = 1; w <= TOTAL_WEEKS; w++) {
+                const input = document.getElementById(`pay-${sIndex}-${w}`);
+                const val = (data[sIndex] && data[sIndex][w]) ? data[sIndex][w] : 0;
+                
+                if (input.value != val && document.activeElement !== input) input.value = val > 0 ? val : '';
+                checkColor(input, w);
+                totalStudentIncome += parseInt(val) || 0;
+            }
+        });
+        updateFooter();
+        statusInd.textContent = "Data Terkini (Online)"; statusInd.style.color = "green";
+    });
+
+    // Sync Transactions
+    db.ref('transactions').on('value', (snapshot) => {
+        const transBody = document.getElementById('trans-body');
+        transBody.innerHTML = '';
+        totalOtherIncome = 0; totalExpenses = 0;
+
+        const data = snapshot.val();
+        if (data) {
+            const entries = Object.entries(data).sort((a, b) => b[1].timestamp - a[1].timestamp);
+            entries.forEach(([key, val]) => {
+                const row = document.createElement('tr');
+                const isExpense = val.type === 'out';
+                const sign = isExpense ? '- ' : '+ ';
+                
+                if (isExpense) totalExpenses += val.amount; else totalOtherIncome += val.amount;
+
+                row.innerHTML = `
+                    <td>${new Date(val.date).toLocaleDateString('id-ID')}</td>
+                    <td style="font-weight:500">${val.desc}</td>
+                    <td><span class="${isExpense ? 'type-out' : 'type-in'}">${isExpense ? 'Pengeluaran' : 'Pemasukan'}</span></td>
+                    <td class="${isExpense ? 'text-red' : 'text-green'}" style="font-weight:700">${sign}${formatRp(val.amount)}</td>
+                    <td><button class="btn-delete" onclick="deleteTransaction('${key}')">Hapus</button></td>
+                `;
+                transBody.appendChild(row);
+            });
+        } else {
+            transBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; opacity:0.5">Belum ada transaksi.</td></tr>';
+        }
+        updateFooter();
+    });
+
+    // --- 7. HELPER FUNCTIONS ---
+    function savePayment(sIndex, wIndex, val) {
+        if (val === '2') val = 2000;
+        if (val === '5') val = 5000;
+        if (val === '10') val = 10000;
+        if (val === '') val = 0;
+        
+        const input = document.getElementById(`pay-${sIndex}-${wIndex}`);
+        input.value = val;
+        checkColor(input, wIndex);
+        statusInd.textContent = "Menyimpan...";
+        db.ref(`payments/${sIndex}/${wIndex}`).set(parseInt(val));
+    }
+
+    function checkColor(input, weekIndex) {
+        const val = parseInt(input.value) || 0;
+        const target = (weekIndex === 1) ? 5000 : 2000;
+        input.classList.remove('is-paid', 'is-partial');
+        if (val >= target) input.classList.add('is-paid');
+        else if (val > 0) input.classList.add('is-partial');
+    }
+
+    function updateFooter() {
+        const realBalance = (totalStudentIncome + totalOtherIncome) - totalExpenses;
+        document.getElementById('total-student-fees').textContent = formatRp(totalStudentIncome);
+        document.getElementById('total-expenses').textContent = formatRp(totalExpenses);
+        document.getElementById('real-balance').textContent = formatRp(realBalance);
+    }
+
+    // --- 8. SECURITY (HASHING SHA-256) & ADMIN ---
+    async function hashString(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function adminLogin() {
+        const pass = prompt("Masukkan Password Admin:");
+        if (!pass) return; 
+        const inputHash = await hashString(pass);
+        // HASH untuk "adminganteng21"
+        const secretHash = "106a7c37466ca9533379105ba9052069502a969f6e52296d9972336262799c0e";
+
+        if (inputHash === secretHash) {
+            document.body.classList.add("is-admin");
+            localStorage.setItem("isAdmin", "true");
+            alert("Login Berhasil! Mode Admin Aktif.");
+        } else {
+            alert("Password Salah!");
+        }
+    }
+
+    function adminLogout() {
+        if (confirm("Yakin ingin keluar?")) {
+            document.body.classList.remove("is-admin");
+            localStorage.removeItem("isAdmin");
+            alert("Logout berhasil.");
+        }
+    }
+    if (localStorage.getItem("isAdmin") === "true") document.body.classList.add("is-admin");
+
+    // --- 9. UI UTILS ---
+    function openRules() { document.getElementById('rulesModal').style.display = 'flex'; }
+    function showImage(src, name) {
+        document.getElementById('imageModal').style.display = 'flex';
+        document.getElementById('img01').src = src;
+        document.getElementById('caption').textContent = name;
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.style.display = "none"; }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        if (html.getAttribute('data-theme') === 'dark') {
+            html.removeAttribute('data-theme'); localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark');
+        }
+    }
+    if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+</script>
+</body>
+</html>
