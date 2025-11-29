@@ -220,12 +220,13 @@
 <script>
     // --- 1. CONFIG FIREBASE ---
     const firebaseConfig = {
-        apiKey: "AIzaSyC1LLUqM7fpWBi64RYNikxv0myBCbeYVfA",
-        authDomain: "kas-tahfidz-b-21-iain-ke-a49e7.firebaseapp.com",
-        projectId: "kas-tahfidz-b-21-iain-ke-a49e7",
-        storageBucket: "kas-tahfidz-b-21-iain-ke-a49e7.firebasestorage.app",
-        messagingSenderId: "958192304792",
-        appId: "1:958192304792:web:70502398346daac16d86ed"
+      apiKey: "AIzaSyC1LLUqM7fpWBi64RYNikxv0myBCbeYVfA",
+      authDomain: "kas-tahfidz-b-21-iain-ke-a49e7.firebaseapp.com",
+      databaseURL: "https://kas-tahfidz-b-21-iain-ke-a49e7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kas-tahfidz-b-21-iain-ke-a49e7",
+      storageBucket: "kas-tahfidz-b-21-iain-ke-a49e7.firebasestorage.app",
+      messagingSenderId: "958192304792",
+      appId: "1:958192304792:web:70502398346daac16d86ed"
     };
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -360,7 +361,7 @@
     function adminLogin() {
         const pass = prompt("Password Admin:");
         if (!pass) return;
-        // Password: adminganteng21
+        // Password: 
         if (btoa(pass) === "YWRtaW5nYW50ZW5nMjE=") {
             document.body.classList.add("is-admin"); localStorage.setItem("isAdmin", "true");
             alert("Login Sukses!");
@@ -393,3 +394,4 @@
 </script>
 </body>
 </html>
+
