@@ -293,6 +293,7 @@
 
 <script>
     // --- 1. KONFIGURASI FIREBASE ---
+    // (PASTIKAN CONFIG INI SUDAH BENAR PUNYA KAMU SENDIRI)
     const firebaseConfig = {
         apiKey: "AIzaSyC1LLUqM7fpWBi64RYNikxv0myBCbeYVfA",
         authDomain: "kas-tahfidz-b-21-iain-ke-a49e7.firebaseapp.com",
@@ -332,7 +333,7 @@
         const rowId = index + 1;
         const tr = document.createElement('tr');
         tr.id = `row-${index}`;
-        const avatarUrl = `foto/${name}.jpeg`; // Ganti .jpg jika perlu
+        const avatarUrl = `foto/${name}.jpeg`; 
         const imgError = `this.onerror=null;this.src='https://ui-avatars.com/api/?name=${name}&background=random&color=fff&size=64';`;
         
         let html = `<td>${rowId}</td><td><div class="user-cell"><img src="${avatarUrl}" class="user-avatar" onerror="${imgError}" onclick="showImage(this.src, '${name}')"><span class="user-name">${name}</span></div></td>`;
@@ -377,7 +378,6 @@
     let totalOtherIncome = 0;
     let totalExpenses = 0;
 
-    // Sync Payments
     db.ref('payments').on('value', (snapshot) => {
         const data = snapshot.val() || {};
         totalStudentIncome = 0;
@@ -396,7 +396,6 @@
         statusInd.textContent = "Data Terkini (Online)"; statusInd.style.color = "green";
     });
 
-    // Sync Transactions
     db.ref('transactions').on('value', (snapshot) => {
         const transBody = document.getElementById('trans-body');
         transBody.innerHTML = '';
@@ -409,14 +408,16 @@
                 const row = document.createElement('tr');
                 const isExpense = val.type === 'out';
                 const sign = isExpense ? '- ' : '+ ';
+                const typeLabel = isExpense ? '<span class="type-out">PENGELUARAN</span>' : '<span class="type-in">PEMASUKAN</span>';
+                const classAmount = isExpense ? 'text-red' : 'text-green';
                 
                 if (isExpense) totalExpenses += val.amount; else totalOtherIncome += val.amount;
 
                 row.innerHTML = `
                     <td>${new Date(val.date).toLocaleDateString('id-ID')}</td>
                     <td style="font-weight:500">${val.desc}</td>
-                    <td><span class="${isExpense ? 'type-out' : 'type-in'}">${isExpense ? 'Pengeluaran' : 'Pemasukan'}</span></td>
-                    <td class="${isExpense ? 'text-red' : 'text-green'}" style="font-weight:700">${sign}${formatRp(val.amount)}</td>
+                    <td>${typeLabel}</td>
+                    <td class="${classAmount}" style="font-weight:700">${sign}${formatRp(val.amount)}</td>
                     <td><button class="btn-delete" onclick="deleteTransaction('${key}')">Hapus</button></td>
                 `;
                 transBody.appendChild(row);
@@ -427,13 +428,9 @@
         updateFooter();
     });
 
-    // --- 7. HELPER FUNCTIONS ---
+    // --- 7. FUNGSI BANTUAN ---
     function savePayment(sIndex, wIndex, val) {
-        if (val === '2') val = 2000;
-        if (val === '5') val = 5000;
-        if (val === '10') val = 10000;
-        if (val === '') val = 0;
-        
+        if (val === '2') val = 2000; if (val === '5') val = 5000; if (val === '10') val = 10000; if (val === '') val = 0;
         const input = document.getElementById(`pay-${sIndex}-${wIndex}`);
         input.value = val;
         checkColor(input, wIndex);
@@ -456,27 +453,21 @@
         document.getElementById('real-balance').textContent = formatRp(realBalance);
     }
 
-    // --- 8. SECURITY (HASHING SHA-256) & ADMIN ---
-    async function hashString(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function adminLogin() {
+    // --- 8. ADMIN LOGIN (VERSI BASE64 - PASTI JALAN) ---
+    function adminLogin() {
         const pass = prompt("Masukkan Password Admin:");
-        if (!pass) return; 
-        const inputHash = await hashString(pass);
-        // HASH untuk "adminganteng21"
-        const secretHash = "106a7c37466ca9533379105ba9052069502a969f6e52296d9972336262799c0e";
+        if (!pass) return;
 
-        if (inputHash === secretHash) {
+        // "YWRtaW5nYW50ZW5nMjE=" adalah kode acak dari "adminganteng21"
+        // Ini metode paling stabil di semua browser
+        const kunci = "YWRtaW5nYW50ZW5nMjE=";
+
+        if (btoa(pass) === kunci) {
             document.body.classList.add("is-admin");
             localStorage.setItem("isAdmin", "true");
             alert("Login Berhasil! Mode Admin Aktif.");
         } else {
-            alert("Password Salah!");
+            alert("Password Salah! Coba lagi.");
         }
     }
 
@@ -484,7 +475,7 @@
         if (confirm("Yakin ingin keluar?")) {
             document.body.classList.remove("is-admin");
             localStorage.removeItem("isAdmin");
-            alert("Logout berhasil.");
+            location.reload();
         }
     }
     if (localStorage.getItem("isAdmin") === "true") document.body.classList.add("is-admin");
@@ -510,4 +501,5 @@
     if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 </script>
 </body>
+
 </html>
